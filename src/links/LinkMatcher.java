@@ -20,7 +20,7 @@ public class LinkMatcher {
 	// where the actual hyperlink is captured in a group.
 	// See the following link regarding the format of the anchor tag:
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
-	public static final String REGEX = ""; // FILL IN regex here
+	public static final String REGEX = "<a[ ]+([.]+?[ ]*=[ ]*\"[.]+?\"[ ]*)*href[ ]*=[ ]*\"(http[s]?://[a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+(/[a-z0-9_\\-]+|/[a-z0-9_\\-]+\\.[a-z0-9]+)*(\\?([a-z0-9_\\-]+=[a-z0-9_\\-]+(&[a-z0-9_\\-]+=[a-z0-9_\\-]+)*)+)*)(#[a-z0-9\\-]+)*\"[ ]*([.]+?[ ]*=[ ]*\"[.]+?\"[ ]*)*[ ]*>";
 	public static int PORT = 80;
 
 	/**
@@ -49,7 +49,9 @@ public class LinkMatcher {
 	 */
 	public static List<String> findLinks(String filename) {
 		List<String> links = new ArrayList<>();
-		// FILL IN CODE
+
+		Pattern p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher();
 
 
 		return links;
