@@ -20,7 +20,7 @@ public class LinkMatcher {
 	// where the actual hyperlink is captured in a group.
 	// See the following link regarding the format of the anchor tag:
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
-	public static final String REGEX = "<a[ ]+([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*href[ ]*=[ ]*\"(http[s]?://[a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+(/[a-z0-9_\\-]+|/[a-z0-9_\\-]+\\.[a-z0-9]+)*(\\?([a-z0-9_\\-]+=[a-z0-9_\\-]+(&[a-z0-9_\\-]+=[a-z0-9_\\-]+)*)+)*)(#[a-z0-9\\-]+)*\"[ ]*([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*[ ]*>";
+	public static final String REGEX = "<a[ ]+([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*href[ ]*=[ ]*\"((http[s]?://[a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+)*(/[a-z0-9_\\-]+|/[a-z0-9_\\-]+\\.[a-z0-9]+)*(\\?([a-z0-9_\\-]+=[a-z0-9_\\-]+(&[a-z0-9_\\-]+=[a-z0-9_\\-]+)*)+)*)(#[a-z0-9\\-]+)*\"[ ]*([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*[ ]*>";
 	public static final String DOMAINREGEX = "http[s]*://([a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+)(.*)?";
 	public static int PORT = 80;
 
@@ -52,7 +52,7 @@ public class LinkMatcher {
 		List<String> links = new ArrayList<>();
 
 		try {
-			//read from html file
+			// read from html file
 			BufferedReader in = new BufferedReader(new FileReader(filename));
 			StringBuilder sb = new StringBuilder();
 			String line;
@@ -63,8 +63,8 @@ public class LinkMatcher {
 			Pattern p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(sb.toString());
 			while (m.find()) {
-				//group 2 is the url without fragment, not adding duplicate
-				if (m.group(2) != null && m.group(2) != "" && !links.contains(m.group(2))) {
+				// group 2 is the url without fragment, not adding duplicate
+				if (m.group(2) != null && m.group(2).length() > 0 && !links.contains(m.group(2))) {
 					links.add(m.group(2));
 				}
 			}
@@ -94,14 +94,14 @@ public class LinkMatcher {
 		String path = "";
 
 		try {
-			//get domain name and path
+			// get domain name and path
 			Pattern p = Pattern.compile(DOMAINREGEX, Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(url);
 			if (m.find()) {
-				if (m.group(1) != null && m.group(1) != "") {
+				if (m.group(1) != null && m.group(1).length() > 0) {
 					domain = m.group(1);
 				}
-				if (m.group(3) != null && m.group(3) != "") {
+				if (m.group(3) != null && m.group(3).length() > 0) {
 					path = m.group(3);
 				}
 			}
@@ -126,10 +126,19 @@ public class LinkMatcher {
 				sb.append(line);
 			}
 
-			//remove header
+			// remove header
 			String result = sb.toString().substring(sb.toString().indexOf("<!DOCTYPE html>"));
+			System.out.println(result);
 
-
+			// load links into list
+			p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
+			m = p.matcher(result);
+			while (m.find()) {
+				//group 2 is the url without fragment, not adding duplicate
+				if (m.group(2) != null && m.group(2) != "" && !links.contains(m.group(2))) {
+					links.add(m.group(2));
+				}
+			}
 		}
 		catch (Exception e) {
 
