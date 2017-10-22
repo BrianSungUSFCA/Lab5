@@ -21,6 +21,7 @@ public class LinkMatcher {
 	// See the following link regarding the format of the anchor tag:
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
 	public static final String REGEX = "<a[ ]+([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*href[ ]*=[ ]*\"(http[s]?://[a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+(/[a-z0-9_\\-]+|/[a-z0-9_\\-]+\\.[a-z0-9]+)*(\\?([a-z0-9_\\-]+=[a-z0-9_\\-]+(&[a-z0-9_\\-]+=[a-z0-9_\\-]+)*)+)*)(#[a-z0-9\\-]+)*\"[ ]*([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*[ ]*>";
+	public static final String DOMAINREGEX = "http[s]*://([a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+)(.*)?";
 	public static int PORT = 80;
 
 	/**
@@ -89,10 +90,61 @@ public class LinkMatcher {
 	 */
 	public static List<String> fetchAndFindLinks(String url) {
 		List<String> links = new ArrayList<>();
-		// FILL IN CODE
+		String domain = "";
+		String path = "";
+
+		try {
+			//get domain name and path
+			Pattern p = Pattern.compile(DOMAINREGEX, Pattern.CASE_INSENSITIVE);
+			Matcher m = p.matcher(url);
+			if (m.find()) {
+				if (m.group(1) != null && m.group(1) != "") {
+					domain = m.group(1);
+				}
+				if (m.group(3) != null && m.group(3) != "") {
+					path = m.group(3);
+				}
+			}
+
+			// create socket and input/output stream
+			Socket socket = new Socket(domain, PORT);
+			OutputStream outStream = socket.getOutputStream();
+			InputStream inStream = socket.getInputStream();
+
+			// create and send request
+			String request = getRequest(domain, path);
+			outStream.write(request.getBytes());
+			outStream.flush();
+
+			// wrap the input stream to make it easier to read from
+			BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
+			StringBuilder sb = new StringBuilder();
+
+			// use input stream to read server's response
+			String line;
+			while ((line = in.readLine()) != null) {
+				sb.append(line);
+			}
+
+			//remove header
+			String result = sb.toString().substring(sb.toString().indexOf("<!DOCTYPE html>"));
+
+
+		}
+		catch (Exception e) {
+
+		}
 
 		return links;
 	}
 
-	// Add other (helper) methods to this class, as needed
+	private static String getRequest(String host, String pathResourceQuery) {
+		String request = "GET " + pathResourceQuery + " HTTP/1.1" + System.lineSeparator() // GET
+				// request
+				+ "Host: " + host + System.lineSeparator() // Host header required for HTTP/1.1
+				+ "Connection: close" + System.lineSeparator() // make sure the server closes the
+				// connection after we fetch one page
+				+ System.lineSeparator();
+		return request;
+	}
 }
