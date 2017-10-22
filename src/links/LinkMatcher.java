@@ -20,7 +20,7 @@ public class LinkMatcher {
 	// where the actual hyperlink is captured in a group.
 	// See the following link regarding the format of the anchor tag:
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
-	public static final String REGEX = "<a[ ]+([.]+?[ ]*=[ ]*\"[.]+?\"[ ]*)*href[ ]*=[ ]*\"(http[s]?://[a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+(/[a-z0-9_\\-]+|/[a-z0-9_\\-]+\\.[a-z0-9]+)*(\\?([a-z0-9_\\-]+=[a-z0-9_\\-]+(&[a-z0-9_\\-]+=[a-z0-9_\\-]+)*)+)*)(#[a-z0-9\\-]+)*\"[ ]*([.]+?[ ]*=[ ]*\"[.]+?\"[ ]*)*[ ]*>";
+	public static final String REGEX = "<a[ ]+([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*href[ ]*=[ ]*\"(http[s]?://[a-z0-9\\-]{2,63}(\\.[a-z0-9\\-]{2,63})+(/[a-z0-9_\\-]+|/[a-z0-9_\\-]+\\.[a-z0-9]+)*(\\?([a-z0-9_\\-]+=[a-z0-9_\\-]+(&[a-z0-9_\\-]+=[a-z0-9_\\-]+)*)+)*)(#[a-z0-9\\-]+)*\"[ ]*([a-z]+[ ]*=[ ]*\"[a-z0-9_]+\"[ ]*)*[ ]*>";
 	public static int PORT = 80;
 
 	/**
@@ -45,17 +45,36 @@ public class LinkMatcher {
 	 * 
 	 * @param filename
 	 *            The name of the HTML file.
-	 * @return An ArrayList of links
+	 * @return List<String>
 	 */
 	public static List<String> findLinks(String filename) {
 		List<String> links = new ArrayList<>();
 
-		Pattern p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher();
+		try {
+			//read from html file
+			BufferedReader in = new BufferedReader(new FileReader(filename));
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = in.readLine()) != null) {
+				sb.append(line);
+			}
 
+			Pattern p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
+			Matcher m = p.matcher(sb.toString());
+			while (m.find()) {
+				//group 2 is the url without fragment, not adding duplicate
+				if (m.group(2) != null && m.group(2) != "" && !links.contains(m.group(2))) {
+					links.add(m.group(2));
+				}
+			}
+
+			in.close();
+		}
+		catch (IOException e) {
+			System.out.println(e);
+		}
 
 		return links;
-
 	}
 
 	/**
@@ -66,14 +85,13 @@ public class LinkMatcher {
 	 * fetch the HTML from the server first.
 	 * 
 	 * @param url
-	 * @return An ArrayList of links
+	 * @return List<String>
 	 */
 	public static List<String> fetchAndFindLinks(String url) {
 		List<String> links = new ArrayList<>();
 		// FILL IN CODE
 
 		return links;
-
 	}
 
 	// Add other (helper) methods to this class, as needed
