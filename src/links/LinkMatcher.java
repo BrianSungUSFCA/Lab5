@@ -1,9 +1,7 @@
 package links;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -46,7 +44,7 @@ public class LinkMatcher {
 	 * 
 	 * @param filename
 	 *            The name of the HTML file.
-	 * @return List<String>
+	 * @return List
 	 */
 	public static List<String> findLinks(String filename) {
 		List<String> links = new ArrayList<>();
@@ -72,7 +70,7 @@ public class LinkMatcher {
 			in.close();
 		}
 		catch (IOException e) {
-			System.out.println(e);
+			System.out.println("IOException happened during findLinks: " + e);
 		}
 
 		return links;
@@ -86,7 +84,7 @@ public class LinkMatcher {
 	 * fetch the HTML from the server first.
 	 * 
 	 * @param url
-	 * @return List<String>
+	 * @return List
 	 */
 	public static List<String> fetchAndFindLinks(String url) {
 		List<String> links = new ArrayList<>();
@@ -135,25 +133,33 @@ public class LinkMatcher {
 			p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);
 			m = p.matcher(result);
 			while (m.find()) {
-				//group 2 is the url without fragment, not adding duplicate
+				// group 2 is the url without fragment
 				if (m.group(2) != null && m.group(2) != "") {
-					//remove '/' if it appears in the end
+					// remove '/' if it appears in the end
 					String tempUrl = (m.group(2).charAt(m.group(2).length() - 1) == '/')
 							? m.group(2).substring(0, m.group(2).length() - 1) : m.group(2);
 
+					// not adding duplicate
 					if (!links.contains(tempUrl)) {
 						links.add(tempUrl);
 					}
 				}
 			}
 		}
-		catch (Exception e) {
-
+		catch (IOException e) {
+			System.out.println("IOException happened during fetchAndFindLinks: " + e);
 		}
 
 		return links;
 	}
 
+	/**
+	 * A method that creates a GET request for the given host and resource
+	 * @param host
+	 * @param pathResourceQuery
+	 * @return String
+	 *          - HTTP GET request returned as a string
+	 */
 	private static String getRequest(String host, String pathResourceQuery) {
 		String request = "GET " + pathResourceQuery + " HTTP/1.1" + System.lineSeparator() // GET
 				// request
